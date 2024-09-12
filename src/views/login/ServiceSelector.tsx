@@ -68,7 +68,7 @@ const ServiceSelector: Screen<"ServiceSelector"> = ({ navigation }) => {
               {
                 title: "Continuer",
                 onPress: () => {
-                  navigation.navigate("SkolengoAuthenticationSelector");
+                  navigation.navigate("EcoleDirecteCredentials");
                   playSound();
                 },
                 icon: <Check />,
@@ -107,7 +107,37 @@ const ServiceSelector: Screen<"ServiceSelector"> = ({ navigation }) => {
             ]
           });
         } else UnsupportedAlert();
-      }
+      },
+    },
+    {
+      name: "netypareo",
+      title: "NetYPareo",
+      image: require("../../../assets/images/service_netypareo.png"),
+      login: () => {
+        if (__DEV__) {
+          showAlert({
+            title: "[DEBUG] Service en développement",
+            message: "Ce service est actuellement en développement. Certaines fonctionnalités peuvent ne pas fonctionner correctement ou ne pas être disponibles.",
+            actions: [
+              {
+                title: "Annuler",
+                onPress: () => { },
+                icon: <Undo2 />,
+                primary: false,
+              },
+              {
+                title: "Continuer",
+                onPress: () => {
+                  navigation.navigate("NetYPareoManualURL");
+                  playSound();
+                },
+                icon: <Check />,
+                primary: true,
+              }
+            ]
+          });
+        } else UnsupportedAlert();
+      },
     },
   ];
 

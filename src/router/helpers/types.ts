@@ -9,6 +9,8 @@ import type pronote from "pawnote";
 import type React from "react";
 import type { School as SkolengoSchool} from "scolengo-api/types/models/School";
 
+import { Session as NetYSession } from 'node_modules/netypareo-api';
+
 export type RouteParameters = {
   // welcome.index
   AccountSelector?: { shouldCreateAccount: boolean };
@@ -40,6 +42,10 @@ export type RouteParameters = {
 
   // login.ecoledirecte
   EcoleDirecteCredentials: undefined;
+
+  //login.netypareo
+  NetYPareoManualURL: { url?: string; method?: string };
+  NetYPareoCredentials: { instanceURL: string, session: NetYSession };
 
   // login.identityProvider
   IdentityProviderSelector: undefined;

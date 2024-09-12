@@ -2,6 +2,7 @@ import type pronote from "pawnote";
 import type { Account as PawdirecteAccount, Session as PawdirecteSession } from "pawdirecte";
 import type { Session as TSSession, Authentication as TSAuthentication } from "turbawself";
 import type { Client as ARDClient } from "pawrd";
+import type { Session as NetYSession } from 'netypareo-api';
 import type ScolengoAPI from "scolengo-api";
 import { SkolengoAuthConfig } from "@/services/skolengo/skolengo-types";
 
@@ -58,6 +59,7 @@ export enum AccountService {
   EcoleDirecte,
   Skolengo,
   Local,
+  NetYPareo,
   WebResto,
   Turboself,
   ARD,
@@ -110,6 +112,16 @@ export interface EcoleDirecteAccount extends BaseAccount {
   }
 }
 
+export interface NetYPareoAccount extends BaseAccount {
+  service: AccountService.NetYPareo
+  instance: undefined
+  authentication: {
+    token: any[]
+    username: string
+    password: string
+  }
+}
+
 export interface SkolengoAccount extends BaseAccount {
   service: AccountService.Skolengo
   instance?: ScolengoAPI.Skolengo
@@ -155,6 +167,7 @@ export type PrimaryAccount = (
   | EcoleDirecteAccount
   | SkolengoAccount
   | LocalAccount
+  | NetYPareoAccount
 );
 export type ExternalAccount = (
   | TurboselfAccount
