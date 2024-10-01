@@ -118,6 +118,7 @@ const ServiceSelector: Screen<"ServiceSelector"> = ({ navigation }) => {
           });
         } else UnsupportedAlert();
       },
+    },
     {
       name: "university",
       title: "Universités et autres",
