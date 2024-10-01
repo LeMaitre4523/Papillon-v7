@@ -4,8 +4,10 @@ import {useCurrentAccount} from "@/stores/account";
 import getCorners from "@/utils/ui/corner-radius";
 import {useTheme} from "@react-navigation/native";
 import React, {useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
+import PackageJSON from "../../../../package.json";
 import {
   ActivityIndicator,
+  Button,
   Dimensions,
   Platform,
   Pressable,
@@ -28,6 +30,9 @@ import Reanimated, {
 } from "react-native-reanimated";
 import {useSafeAreaInsets} from "react-native-safe-area-context";
 
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { defaultTabs } from "@/consts/DefaultTabs";
+
 import AccountSwitcher from "@/components/Home/AccountSwitcher";
 import ContextMenu from "@/components/Home/AccountSwitcherContextMenu";
 import Header from "@/components/Home/Header";
@@ -43,13 +48,17 @@ import {
 } from "./Animations/HomeAnimations";
 
 import {NativeItem, NativeList, NativeText} from "@/components/Global/NativeComponents";
-import {WifiOff} from "lucide-react-native";
+import {Gift, Sparkles, WifiOff} from "lucide-react-native";
 
 import NetInfo from "@react-native-community/netinfo";
 import {getErrorTitle} from "@/utils/format/get_papillon_error_title";
 import {Elements} from "./ElementIndex";
 import {animPapillon} from "@/utils/ui/animations";
 import {useBottomTabBarHeight} from "@react-navigation/bottom-tabs";
+import { useFlagsStore } from "@/stores/flags";
+import InsetsBottomView from "@/components/Global/InsetsBottomView";
+import { th } from "date-fns/locale";
+import MissingItem from "@/components/Global/MissingItem";
 
 let headerHeight = Dimensions.get("window").height / 2.75;
 if (headerHeight < 275) {
@@ -94,6 +103,7 @@ const Home: Screen<"HomeScreen"> = ({ route, navigation }) => {
   const scrollRef = useRef<Reanimated.ScrollView>(null);
 
   const account = useCurrentAccount(store => store.account!);
+  const mutateProperty = useCurrentAccount(store => store.mutateProperty);
 
   const stylez = stylezAnim(translationY, headerHeight);
   const overHeaderAnim = overHeaderAnimAnim(translationY, headerHeight);
@@ -102,6 +112,61 @@ const Home: Screen<"HomeScreen"> = ({ route, navigation }) => {
   const backdropStyle = backdropStyleAnim(translationY, headerHeight);
   const paddingTopItemStyle = paddingTopItemStyleAnim(translationY, insets, headerHeight, overHeaderHeight);
   const accountSwitcherStyle = accountSwitcherAnim(translationY, insets, headerHeight);
+
+  const [updatedRecently, setUpdatedRecently] = useState(false);
+  const defined = useFlagsStore(state => state.defined);
+
+  useEffect(() => {
+    AsyncStorage.getItem("changelog.lastUpdate")
+      .then((value) => {
+        if (value) {
+          const currentVersion = PackageJSON.version;
+          if (value !== currentVersion) {
+            setUpdatedRecently(true);
+          }
+        }
+        else {
+          setUpdatedRecently(true);
+        }
+      });
+  }, []);
+
+  const checkForNewTabs = useCallback(() => {
+    const storedTabs = account.personalization.tabs || [];
+    const newTabs = defaultTabs.filter(defaultTab =>
+      !storedTabs.some(storedTab => storedTab.name === defaultTab.tab)
+    );
+
+    if (newTabs.length > 0) {
+      const updatedTabs = [
+        ...storedTabs,
+        ...newTabs.map(tab => ({
+          name: tab.tab,
+          enabled: false,
+          installed: true
+        }))
+      ];
+
+      mutateProperty("personalization", {
+        ...account.personalization,
+        tabs: updatedTabs,
+      });
+
+      setUpdatedRecently(true);
+    }
+  }, [account.personalization.tabs, mutateProperty]);
+
+  useEffect(() => {
+    checkForNewTabs();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", () => {
+      checkForNewTabs();
+    });
+
+    return unsubscribe;
+  }, [navigation, checkForNewTabs]);
 
   const openAccSwitcher = useCallback(() => {
     scrollRef.current?.scrollTo({ y: headerHeight, animated: true });
@@ -228,6 +293,7 @@ const Home: Screen<"HomeScreen"> = ({ route, navigation }) => {
             <AccountSwitcher
               translationY={translationY}
               scrolled={scrolled}
+              loading={!account.instance}
             />
           </ContextMenu>
         </Reanimated.View>
@@ -446,28 +512,37 @@ const Home: Screen<"HomeScreen"> = ({ route, navigation }) => {
                 style={[paddingTopItemStyle]}
               />
 
-
-              {!account.instance &&
-                  <Reanimated.View
-                    entering={FlipInXDown.springify().mass(1).damping(20).stiffness(300)}
-                    exiting={FadeOutUp.springify().mass(1).damping(20).stiffness(300)}
-                    layout={animPapillon(LinearTransition)}
+              {(defined("force_changelog") || updatedRecently) && (
+                <NativeList
+                  animated
+                  entering={animPapillon(FadeInUp)}
+                  exiting={animPapillon(FadeOutDown)}
+                >
+                  <NativeItem
+                    leading={
+                      <Gift
+                        color={theme.colors.primary}
+                        size={28}
+                        strokeWidth={2}
+                      />
+                    }
+                    onPress={() => navigation.navigate("ChangelogScreen")}
+                    style={{
+                      backgroundColor: theme.colors.primary + "30",
+                    }}
+                    androidStyle={{
+                      backgroundColor: theme.colors.primary + "20",
+                    }}
                   >
-                    <NativeList inline>
-                      <NativeItem
-                        leading={
-                          <ActivityIndicator
-                            style={{ marginLeft: 9, marginVertical: 4 }}
-                          />
-                        }
-                      >
-                        <NativeText variant="body">
-                          Obtention de la session
-                        </NativeText>
-                      </NativeItem>
-                    </NativeList>
-                  </Reanimated.View>
-              }
+                    <NativeText variant="title">
+                      Papillon {PackageJSON.version} est arrivé !
+                    </NativeText>
+                    <NativeText variant="subtitle">
+                      Découvrez les nouveautés de cette nouvelle version en appuyant ici.
+                    </NativeText>
+                  </NativeItem>
+                </NativeList>
+              )}
 
               {!isOnline &&
                 <Reanimated.View
@@ -490,7 +565,6 @@ const Home: Screen<"HomeScreen"> = ({ route, navigation }) => {
                 </Reanimated.View>
               }
 
-
               <Reanimated.View
                 layout={animPapillon(LinearTransition)}
               >
@@ -501,10 +575,14 @@ const Home: Screen<"HomeScreen"> = ({ route, navigation }) => {
                     entering={animPapillon(FadeInUp)}
                     exiting={animPapillon(FadeOutDown)}
                   >
-                    <Element />
+                    <Element
+                      navigation={navigation}
+                    />
                   </Reanimated.View>
                 ))}
               </Reanimated.View>
+
+              <InsetsBottomView />
             </Reanimated.View>
           )}
         </Reanimated.View>

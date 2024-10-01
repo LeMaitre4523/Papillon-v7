@@ -11,7 +11,7 @@ import { PapillonNavigation } from "@/router/refs";
 import RedirectButton from "@/components/Home/RedirectButton";
 import { dateToEpochWeekNumber } from "@/utils/epochWeekNumber";
 
-const HomeworksElement = () => {
+const HomeworksElement = ({ navigation }) => {
   const account = useCurrentAccount(store => store.account!);
   const homeworks = useHomeworkStore(store => store.homeworks);
 
@@ -35,7 +35,22 @@ const HomeworksElement = () => {
     [account, updateHomeworks]
   );
 
-  if (!homeworks[dateToEpochWeekNumber(actualDay)] || homeworks[dateToEpochWeekNumber(actualDay)]?.filter(hw => new Date(hw.due).getDate() === actualDay.getDate()).length === 0) {
+  if (
+    !homeworks[dateToEpochWeekNumber(actualDay)]?.filter(
+      (hw) => hw.due / 1000 >= startTime && hw.due / 1000 <= endTime
+    ) &&
+    !homeworks[dateToEpochWeekNumber(actualDay) + 1]?.filter(
+      (hw) => hw.due / 1000 >= startTime && hw.due / 1000 <= endTime
+    )
+  ) {
+    return null;
+  }
+  const startTime = Date.now() / 1000; // Convertir en millisecondes
+  const endTime = startTime + 7 * 24 * 60 * 60 * 1000; // Ajouter 7 jours en millisecondes
+
+  const hwFinalList = homeworks[dateToEpochWeekNumber(actualDay)]?.filter(hw => hw.due / 1000 >= startTime && hw.due / 1000 <= endTime);
+
+  if(hwFinalList.length === 0) {
     return null;
   }
 
@@ -47,12 +62,25 @@ const HomeworksElement = () => {
         )}
       />
       <NativeList>
-        {homeworks[dateToEpochWeekNumber(actualDay)]?.filter(hw => new Date(hw.due).getDate() === actualDay.getDate()).map((hw, index) => (
+        {hwFinalList.map((hw, index) => (
+          <HomeworkItem
+            navigation={navigation}
+            homework={hw}
+            key={index}
+            index={index}
+            total={homeworks[dateToEpochWeekNumber(actualDay) + 1]?.length || 0}
+            onDonePressHandler={() => {
+              handleDonePress(hw);
+            }}
+          />
+        ))}
+        {new Date().getDay() >= 2 && homeworks[dateToEpochWeekNumber(actualDay) + 1]?.filter(hw => hw.due / 1000 >= startTime && hw.due / 1000 <= endTime).map((hw, index) => (
           <HomeworkItem
             homework={hw}
             key={index}
             index={index}
-            total={homeworks[dateToEpochWeekNumber(actualDay)].length}
+            navigation={navigation}
+            total={homeworks[dateToEpochWeekNumber(actualDay) + 1].length}
             onDonePressHandler={() => {
               handleDonePress(hw);
             }}
