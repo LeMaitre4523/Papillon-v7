@@ -4,6 +4,7 @@ import type { Session as TSSession, Authentication as TSAuthentication } from "t
 import type { Client as ARDClient } from "pawrd";
 import type { Session as NetYSession } from 'netypareo-api';
 import type ScolengoAPI from "scolengo-api";
+import type UphfAPI from "uphf-api";
 import { SkolengoAuthConfig } from "@/services/skolengo/skolengo-types";
 import { User as ScolengoAPIUser } from "scolengo-api/types/models/Common";
 
@@ -72,7 +73,8 @@ export enum AccountService {
   Turboself,
   ARD,
   Parcoursup,
-  Onisep
+  Onisep,
+  UPHF
 }
 
 /**
@@ -137,6 +139,14 @@ export interface SkolengoAccount extends BaseAccount {
   userInfo: ScolengoAPIUser
 }
 
+export interface UphfAccount extends BaseAccount {
+  service: AccountService.UPHF
+  instance?: UphfAPI.UPHF
+  authentication: {
+    refreshAuthToken: string
+  }
+}
+
 export interface LocalAccount extends BaseAccount {
   service: AccountService.Local
 
@@ -175,6 +185,7 @@ export type PrimaryAccount = (
   | PronoteAccount
   | EcoleDirecteAccount
   | SkolengoAccount
+  | UphfAccount
   | LocalAccount
   | NetYPareoAccount
 );
