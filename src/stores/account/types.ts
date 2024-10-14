@@ -115,11 +115,11 @@ export interface PronoteAccount extends BaseAccount {
 
 export interface EcoleDirecteAccount extends BaseAccount {
   service: AccountService.EcoleDirecte
-  instance: undefined
+  instance: {}
   authentication: {
     session: PawdirecteSession
     account: PawdirecteAccount
-  }
+  },
 }
 
 export interface NetYPareoAccount extends BaseAccount {
