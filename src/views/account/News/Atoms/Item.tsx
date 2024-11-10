@@ -1,4 +1,4 @@
-import { useTheme } from "@react-navigation/native";
+import {RouteProp, useTheme} from "@react-navigation/native";
 import React from "react";
 import {
   Dimensions,
@@ -12,11 +12,24 @@ import parse_news_resume from "@/utils/format/format_pronote_news";
 import parse_initials from "@/utils/format/format_pronote_initials";
 import formatDate from "@/utils/format/format_date_complets";
 import InitialIndicator from "@/components/News/InitialIndicator";
+import {NativeStackNavigationProp} from "@react-navigation/native-stack";
+import {RouteParameters} from "@/router/helpers/types";
+import {Information} from "@/services/shared/Information";
+import { selectColorSeed } from "@/utils/format/select_color_seed";
 import RenderHTML from "react-native-render-html";
 
-const NewsListItem = ({ index, message, navigation, parentMessages, isED }) => {
-  const theme = useTheme();
+type NewsItem = Omit<Information, "date"> & { date: string, important: boolean };
 
+interface NewsListItemProps {
+  index: number
+  message: NewsItem
+  navigation: NativeStackNavigationProp<RouteParameters, "News", undefined>
+  isED: boolean
+  parentMessages: NewsItem[]
+}
+
+const NewsListItem: React.FC<NewsListItemProps> = ({ index, message, navigation, parentMessages, isED }) => {
+  const theme = useTheme();
   return (
     <NativeItem
       onPress={() => {
@@ -30,7 +43,7 @@ const NewsListItem = ({ index, message, navigation, parentMessages, isED }) => {
       leading={
         <InitialIndicator
           initial={parse_initials(message.author)}
-          color={theme.colors.primary}
+          color={selectColorSeed(message.author)}
         />
       }
       separator={index !== parentMessages.length - 1}
@@ -71,18 +84,7 @@ const NewsListItem = ({ index, message, navigation, parentMessages, isED }) => {
           opacity: 0.8,
         }}
       >
-        <RenderHTML
-          contentWidth={Dimensions.get("window").width - (16 * 3)}
-          source={{
-            html: message.content,
-          }}
-          ignoredStyles={["fontFamily", "fontSize"]}
-          baseStyle={{
-            fontFamily: "regular",
-            fontSize: 16,
-            color: theme.colors.text,
-          }}
-        />
+        {message.content ? parse_news_resume(message.content) : ""}
       </NativeText>
       <NativeText
         numberOfLines={1}

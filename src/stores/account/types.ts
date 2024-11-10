@@ -1,10 +1,13 @@
 import type pronote from "pawnote";
 import type { Account as PawdirecteAccount, Session as PawdirecteSession } from "pawdirecte";
-import type { Session as TSSession, Authentication as TSAuthentication } from "turbawself";
-import type { Client as ARDClient } from "pawrd";
+
+import type { Client as ARDClient, Client as PawrdClient } from "pawrd";
+import { Client as TurboselfClient } from "turboself-api";
 import type { Session as NetYSession } from 'netypareo-api';
+
 import type ScolengoAPI from "scolengo-api";
-import type UphfAPI from "uphf-api";
+import {Configuration, Identification} from "ezly";
+import type MultiAPI from "esup-multi.js";
 import { SkolengoAuthConfig } from "@/services/skolengo/skolengo-types";
 import { User as ScolengoAPIUser } from "scolengo-api/types/models/Common";
 
@@ -40,7 +43,10 @@ export interface Personalization {
   showTabBackground: boolean,
   transparentTabBar: boolean,
   hideTabBar: boolean,
+  popupRestauration?: boolean,
   magicEnabled?: boolean,
+  MagicNews?: boolean,
+  MagicHomeworks?: boolean,
   icalURLs: PapillonIcalURL[],
   tabs: Tab[],
   subjects: {
@@ -74,7 +80,8 @@ export enum AccountService {
   ARD,
   Parcoursup,
   Onisep,
-  UPHF
+  Multi,
+  Izly
 }
 
 /**
@@ -101,6 +108,7 @@ interface BaseExternalAccount {
   localID: string
   isExternal: true
   username: string
+  linkedExternalLocalIDs?: string[]
   data: Record<string, unknown>
 }
 
@@ -111,6 +119,7 @@ export interface PronoteAccount extends BaseAccount {
   authentication: pronote.RefreshInformation & {
     deviceUUID: string
   }
+  identityProvider?: undefined
 }
 
 export interface EcoleDirecteAccount extends BaseAccount {
@@ -119,7 +128,8 @@ export interface EcoleDirecteAccount extends BaseAccount {
   authentication: {
     session: PawdirecteSession
     account: PawdirecteAccount
-  },
+  }
+  identityProvider?: undefined
 }
 
 export interface NetYPareoAccount extends BaseAccount {
@@ -137,27 +147,35 @@ export interface SkolengoAccount extends BaseAccount {
   instance?: ScolengoAPI.Skolengo
   authentication: SkolengoAuthConfig
   userInfo: ScolengoAPIUser
+  identityProvider?: undefined
 }
 
-export interface UphfAccount extends BaseAccount {
-  service: AccountService.UPHF
-  instance?: UphfAPI.UPHF
+export interface MultiAccount extends BaseAccount {
+  service: AccountService.Multi
+  instance?: MultiAPI.Multi
   authentication: {
+    instanceURL: string
     refreshAuthToken: string
   }
+  identityProvider?: undefined
 }
 
 export interface LocalAccount extends BaseAccount {
   service: AccountService.Local
 
   // Both are useless for local accounts.
-  instance: undefined
-  authentication: undefined
+  instance: undefined | Record<string, unknown>
+  authentication: undefined | boolean
 
   identityProvider: {
     identifier: string
     name: string,
     rawData: Record<string, unknown>
+  }
+
+  credentials: {
+    username: string
+    password: string
   }
 }
 
@@ -165,8 +183,9 @@ export interface TurboselfAccount extends BaseExternalAccount {
   service: AccountService.Turboself
   instance: undefined
   authentication: {
-    auth: TSAuthentication
-    session: TSSession
+    session: TurboselfClient
+    username: string
+    password: string
   }
 }
 
@@ -181,17 +200,28 @@ export interface ARDAccount extends BaseExternalAccount {
   }
 }
 
+export interface IzlyAccount extends BaseExternalAccount {
+  service: AccountService.Izly
+  instance?: Identification
+  authentication: {
+    secret: string
+    identification: Identification
+    configuration: Configuration
+  }
+}
+
 export type PrimaryAccount = (
   | PronoteAccount
   | EcoleDirecteAccount
   | SkolengoAccount
-  | UphfAccount
+  | MultiAccount
   | LocalAccount
   | NetYPareoAccount
 );
 export type ExternalAccount = (
   | TurboselfAccount
   | ARDAccount
+  | IzlyAccount
 );
 
 export type Account = (

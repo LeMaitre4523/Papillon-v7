@@ -37,8 +37,8 @@ export async function updateNewsInCache <T extends Account> (account: T): Promis
       useNewsStore.getState().updateInformations(informations);
       break;
     }
-    case AccountService.UPHF: {
-      const { getNews } = await import("./uphf/data/news");
+    case AccountService.Multi: {
+      const { getNews } = await import("./multi/data/news");
       const informations = await getNews(account);
       useNewsStore.getState().updateInformations(informations);
       break;
@@ -52,15 +52,19 @@ export async function updateNewsInCache <T extends Account> (account: T): Promis
 /**
  * Sets news read
  */
-export async function setNewsRead <T extends Account> (account: T, message: Information, read: Boolean = false): Promise<void> {
+export async function setNewsRead <T extends Account> (account: T, message: Information, read: boolean = false): Promise<void> {
   switch (account.service) {
     case AccountService.Pronote: {
+      if (!account.instance) {
+        error("[setNewsRead]: Instance is undefined.", "pronote");
+        break;
+      }
       await newsRead(account.instance, message.ref, read);
       break;
     }
     case AccountService.Local:
     case AccountService.EcoleDirecte:
-    case AccountService.UPHF:
+    case AccountService.Multi:
       break;
     default: {
       throw new Error("Service not implemented.");

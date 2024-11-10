@@ -1,4 +1,4 @@
-import type { Personalization } from "@/stores/account/types";
+import type { MultiAccount, Personalization } from "@/stores/account/types";
 import { defaultTabs } from "@/consts/DefaultTabs";
 import type pronote from "pawnote";
 
@@ -10,7 +10,7 @@ const defaultUphfTabs = [
   "News",
 ] as typeof defaultTabs[number]["tab"][];
 
-const defaultPersonalization = async (): Promise<Partial<Personalization>> => {
+const defaultPersonalization = async (instance: MultiAccount["instance"]): Promise<Partial<Personalization>> => {
   return {
     color: colors[0],
     magicEnabled: true,
