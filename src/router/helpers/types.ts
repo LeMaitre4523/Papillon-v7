@@ -12,6 +12,7 @@ import type React from "react";
 import type { School as SkolengoSchool} from "scolengo-api/types/models/School";
 import {Information} from "@/services/shared/Information";
 import { ImageSourcePropType } from "react-native";
+import {Client} from "pawrd";
 
 import { Session as NetYSession } from 'node_modules/netypareo-api';
 
@@ -143,7 +144,7 @@ export type RouteParameters = {
   ExternalArdLogin: undefined;
   ExternalIzlyLogin: undefined;
   IzlyActivation: { username: string, password: string };
-  QrcodeAnswer: { accountID: string };
+  PriceError: { account: Client, accountId: string };
   QrcodeScanner: { accountID: string };
   PriceDetectionOnboarding: { accountID: string };
   PriceBeforeScan: { accountID: string };
