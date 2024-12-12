@@ -3,7 +3,6 @@ import type { Account as PawdirecteAccount, Session as PawdirecteSession } from 
 
 import type { Client as ARDClient, Client as PawrdClient } from "pawrd";
 import { Client as TurboselfClient } from "turboself-api";
-import type { Session as NetYSession } from 'netypareo-api';
 
 import type ScolengoAPI from "scolengo-api";
 import {Configuration, Identification} from "ezly";
