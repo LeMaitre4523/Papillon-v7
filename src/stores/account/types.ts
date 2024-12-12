@@ -10,6 +10,7 @@ import {Configuration, Identification} from "ezly";
 import type MultiAPI from "esup-multi.js";
 import { SkolengoAuthConfig } from "@/services/skolengo/skolengo-types";
 import { User as ScolengoAPIUser } from "scolengo-api/types/models/Common";
+import {OnlinePayments} from "pawrd/dist";
 
 export interface Tab {
   name: string
@@ -47,6 +48,14 @@ export interface Personalization {
   magicEnabled?: boolean,
   MagicNews?: boolean,
   MagicHomeworks?: boolean,
+  notifications?: {
+    enabled?: boolean
+    news?: boolean
+    homeworks?: boolean
+    grades?: boolean
+    timetable?: boolean
+    attendance?: boolean
+  }
   icalURLs: PapillonIcalURL[],
   tabs: Tab[],
   subjects: {
@@ -196,7 +205,8 @@ export interface ARDAccount extends BaseExternalAccount {
     pid: string
     username: string
     password: string
-    schoolID: string,
+    schoolID: string
+    balances: OnlinePayments
     mealPrice: number
   }
 }

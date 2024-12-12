@@ -10,7 +10,7 @@ import {
 } from "@/utils/grades/getAverages";
 import { useTheme } from "@react-navigation/native";
 import React, { useRef, useCallback, useEffect, useState } from "react";
-import { View, StyleSheet, Platform, Alert } from "react-native";
+import { View, StyleSheet, Platform, Alert, TouchableOpacity, Linking } from "react-native";
 
 import Reanimated, {
   FadeIn,
@@ -31,6 +31,7 @@ const ReanimatedGraph: React.ForwardRefExoticComponent<ReanimatedGraphProps & Re
 import { useCurrentAccount } from "@/stores/account";
 import AnimatedNumber from "@/components/Global/AnimatedNumber";
 import type { Grade } from "@/services/shared/Grade";
+import { AlertTriangle } from "lucide-react-native";
 
 interface GradesAverageGraphProps {
   grades: Grade[];
@@ -81,6 +82,9 @@ const GradesAverageGraph: React.FC<GradesAverageGraphProps> = ({
 
     let maxAvg = getPronoteAverage(grades, "max");
     let minAvg = getPronoteAverage(grades, "min");
+
+    const finalAvg = getPronoteAverage(grades, "student");
+    console.log("finalAvg", finalAvg);
 
     setGradesHistory(hst);
     setHLength(hst.length);
@@ -145,37 +149,46 @@ const GradesAverageGraph: React.FC<GradesAverageGraphProps> = ({
             {((showDetails && !overall) || selectedDate) && (
               <Reanimated.View
                 style={{
-                  height: 5,
+                  height: 10,
                 }}
               />
             )}
 
             {((showDetails && !overall) || selectedDate) && (
-              <Reanimated.View
+              <TouchableOpacity
+                onPress={() => {
+                  Linking.openURL("https://docs.papillon.bzh/kb/averages");
+                }}
                 style={{
                   position: "absolute",
                   top: 10,
                   left: 10,
-                  backgroundColor: theme.colors.primary + "22",
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  borderRadius: 8,
-                  borderCurve: "continuous",
                   zIndex: 100,
                 }}
-                entering={animPapillon(FadeInLeft)}
-                exiting={animPapillon(FadeOutLeft)}
               >
-                <Reanimated.Text
+                <Reanimated.View
                   style={{
-                    fontSize: 14,
-                    color: theme.colors.primary,
-                    fontFamily: "semibold",
+                    backgroundColor: theme.colors.primary + "22",
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 8,
+                    borderCurve: "continuous",
+                    zIndex: 100,
                   }}
+                  entering={animPapillon(FadeInLeft)}
+                  exiting={animPapillon(FadeOutLeft)}
                 >
-                  Estimation
-                </Reanimated.Text>
-              </Reanimated.View>
+                  <Reanimated.Text
+                    style={{
+                      fontSize: 14,
+                      color: theme.colors.primary,
+                      fontFamily: "semibold",
+                    }}
+                  >
+                    Estimation
+                  </Reanimated.Text>
+                </Reanimated.View>
+              </TouchableOpacity>
             )}
 
             {hLength > 1 ? (
@@ -252,8 +265,29 @@ const GradesAverageGraph: React.FC<GradesAverageGraphProps> = ({
                     key={"cAvgG"}
                     entering={animPapillon(FadeInDown)}
                     exiting={animPapillon(FadeOutUp)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
                   >
-                    <NativeText numberOfLines={1}>Moyenne gén.</NativeText>
+                    <NativeText numberOfLines={1}>
+                      {(!overall || selectedDate) ? (
+                        "Moyenne estimée"
+                      ) : (
+                        "Moyenne gén."
+                      )}
+                    </NativeText>
+
+
+
+                    {(!overall || selectedDate) && (
+                      <AlertTriangle
+                        size={16}
+                        color={theme.colors.primary}
+                        strokeWidth={2.5}
+                      />
+                    )}
                   </Reanimated.View>
                 )}
 
