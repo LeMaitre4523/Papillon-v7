@@ -4,6 +4,7 @@ import {
   PapillonModernHeader,
 } from "@/components/Global/PapillonModernHeader";
 import PapillonPicker from "@/components/Global/PapillonPicker";
+import { useAlert } from "@/providers/AlertProvider";
 import type { Screen } from "@/router/helpers/types";
 import {
   updateGradesAndAveragesInCache,
@@ -117,9 +118,11 @@ const Grades: Screen<"Grades"> = ({ route, navigation }) => {
         });
       }
 
-      gradesPerSubject.sort((a, b) =>
-        a.average.subjectName.localeCompare(b.average.subjectName)
-      );
+      if (account.service !== AccountService.EcoleDirecte) {
+        gradesPerSubject.sort((a, b) =>
+          a.average.subjectName.localeCompare(b.average.subjectName)
+        );
+      }
       setGradesPerSubject(gradesPerSubject);
     }, 1);
   }, [selectedPeriod, averages, grades]);
@@ -223,7 +226,7 @@ const Grades: Screen<"Grades"> = ({ route, navigation }) => {
                 >
                   <GradesAverageGraph
                     grades={grades[selectedPeriod] ?? []}
-                    overall={(averages[selectedPeriod]?.overall && !averages[selectedPeriod]?.overall.disabled) ? averages[selectedPeriod]?.overall.value : undefined}
+                    overall={(averages[selectedPeriod]?.overall && !averages[selectedPeriod]?.overall.disabled) ? averages[selectedPeriod]?.overall.value : null}
                     classOverall={averages[selectedPeriod]?.classOverall.value}
                   />
                 </Reanimated.View>
